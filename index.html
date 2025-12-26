@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Live Weather</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+
+    <!-- SEARCH -->
+    <div class="searchBar">
+        <div class="searchBarParentDiv">
+            <input type="text" class="inputfield" placeholder="Search city (e.g. Hyderabad,IN)">
+            <img src="./search.png" width="35" class="searchIcon" onclick="fetchData()">
+        </div>
+    </div>
+
+    <!-- INLINE ERROR -->
+    <p id="inputError" class="inputError">Invalid city name</p>
+
+    <!-- MAIN -->
+    <div class="mainContentParentDiv d-flex">
+
+        <!-- LEFT -->
+        <div class="leftDiv">
+
+            <div class="leftCard p-3">
+                <h3 id="cityName">City</h3>
+                <h2><span id="cityTemp">-</span> °C</h2>
+                <h6 id="skyDesc">Weather</h6>
+
+                <hr>
+
+                <p>📅 <span id="date">Date</span></p>
+                <p>⏰ <span id="time">Time</span></p>
+            </div>
+
+            <div class="leftCard p-3">
+                <h5>Coming 5 Days</h5>
+                <div id="forecastContainer"></div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="rightDiv">
+
+            <div class="metricsRow">
+                <div class="metricCard">💧 Humidity<br><span id="humidity">-</span></div>
+                <div class="metricCard">🌡 Feels Like<br><span id="feelsLike">-</span></div>
+                <div class="metricCard">🧭 Pressure<br><span id="pressure">-</span></div>
+                <div class="metricCard">👁 Visibility<br><span id="visiblity">-</span></div>
+            </div>
+
+            <div class="suggestionCard">
+                <h5>🌤 Weather Suggestion</h5>
+                <p id="weatherSuggestionText">Search a city to get suggestions</p>
+            </div>
+
+            <div class="todayCard">
+                <h5>Today Forecast</h5>
+                <div id="todayTempContainer" class="todayRow"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <script>
+        const API_KEY = "d28274b5fe592e1f1e558103a5e66370";
+
+        const errorEl = document.getElementById("inputError");
+        const inputEl = document.querySelector(".inputfield");
+
+        function showError(msg) {
+            errorEl.innerText = msg;
+            errorEl.style.display = "block";
+        }
+
+        function hideError() {
+            errorEl.style.display = "none";
+        }
+
+        inputEl.addEventListener("input", hideError);
+
+        function weatherSuggestion(temp, desc, humidity) {
+            desc = desc.toLowerCase();
+            if (desc.includes("rain")) return "☔ Rain expected. Carry an umbrella.";
+            if (temp > 35) return "🔥 Very hot today. Stay hydrated.";
+            if (temp < 15) return "🧥 Cold weather. Wear warm clothes.";
+            if (humidity > 80) return "💧 High humidity. Drink more water.";
+            if (desc.includes("clear")) return "☀️ Clear sky. Great for outdoor activities.";
+            if (desc.includes("cloud")) return "☁️ Cloudy weather. Comfortable day.";
+            return "🌤 Have a great day!";
+        }
+
+        function formatDate(ts) {
+            return new Date(ts * 1000).toLocaleString().split(",");
+        }
+
+        async function fetchData() {
+
+            let city = inputEl.value.trim();
+
+            if (!city) {
+                showError("Please enter a city name");
+                return;
+            }
+
+            hideError();
+            city = encodeURIComponent(city);
+
+            try {
+                // 1️⃣ Try direct city weather
+                let res = await fetch(
+                    `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+                );
+                let data = await res.json();
+
+                // 2️⃣ If failed → try Geocoding (handles spelling/state names)
+                if (data.cod !== 200) {
+                    let geoRes = await fetch(
+                        `https://api.openweathermap.org/geo/1.0/direct?q=${city}&limit=1&appid=${API_KEY}`
+                    );
+                    let geoData = await geoRes.json();
+
+                    if (!geoData.length) {
+                        showError("City not found. Try nearest major city.");
+                        return;
+                    }
+
+                    let { lat, lon } = geoData[0];
+                    res = await fetch(
+                        `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+                    );
+                    data = await res.json();
+                }
+
+                // ✅ Update UI safely
+                $("#cityName").text(data.name);
+                $("#cityTemp").text(data.main.temp.toFixed(1));
+                $("#skyDesc").text(data.weather[0].description);
+
+                $("#humidity").text(data.main.humidity + "%");
+                $("#pressure").text(data.main.pressure);
+                $("#feelsLike").text(data.main.feels_like + "°C");
+                $("#visiblity").text((data.visibility / 1000).toFixed(1) + " km");
+
+                let dt = formatDate(data.dt);
+                $("#date").text(dt[0]);
+                $("#time").text(dt[1]);
+
+                $("#weatherSuggestionText").text(
+                    weatherSuggestion(
+                        data.main.temp,
+                        data.weather[0].description,
+                        data.main.humidity
+                    )
+                );
+
+                todayTemps(data.coord.lat, data.coord.lon);
+                nextFiveDays(data.coord.lat, data.coord.lon);
+
+            } catch (err) {
+                showError("Network issue. Please try again.");
+            }
+        }
+
+        async function nextFiveDays(lat, lon) {
+            let res = await fetch(
+                `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+            );
+            let data = await res.json();
+
+            let days = {};
+            data.list.forEach(i => {
+                let d = i.dt_txt.split(" ")[0];
+                if (!days[d]) days[d] = i.main.temp.toFixed(1);
+            });
+
+            let html = "";
+            Object.keys(days).slice(0, 5).forEach(d => {
+                html += `<p>${d} : ${days[d]} °C</p>`;
+            });
+
+            $("#forecastContainer").html(html);
+        }
+
+        async function todayTemps(lat, lon) {
+            let res = await fetch(
+                `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
+            );
+            let data = await res.json();
+
+            let today = new Date().toISOString().split("T")[0];
+            let todayData = data.list.filter(i => i.dt_txt.startsWith(today)).slice(0, 6);
+
+            let html = "";
+            todayData.forEach(i => {
+                html += `
+                    <div class="todayBox">
+                        <p>${new Date(i.dt_txt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        <h5>${i.main.temp.toFixed(1)}°C</h5>
+                    </div>`;
+            });
+
+            $("#todayTempContainer").html(html);
+        }
+    </script>
+
+</body>
+</html>

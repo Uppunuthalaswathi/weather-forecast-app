@@ -1,0 +1,102 @@
+body {
+    background: url('./2148933766.jpg') center/cover fixed;
+    font-family: "Comfortaa", sans-serif;
+    color: white;
+}
+
+.searchBar {
+    height: 10vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.searchBarParentDiv {
+    width: 50%;
+    position: relative;
+}
+
+.inputfield {
+    width: 100%;
+    padding: 12px;
+    border-radius: 30px;
+    border: none;
+    outline: none;
+}
+
+.searchIcon {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    cursor: pointer;
+}
+
+.mainContentParentDiv {
+    height: 90vh;
+}
+
+.leftDiv {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.rightDiv {
+    width: 70%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.leftCard,
+.metricCard,
+.suggestionCard,
+.todayCard {
+    background: rgba(255,255,255,0.25);
+    backdrop-filter: blur(15px);
+    border-radius: 15px;
+    padding: 15px;
+}
+
+.metricsRow {
+    display: flex;
+    gap: 15px;
+}
+
+.metricCard {
+    flex: 1;
+    text-align: center;
+}
+
+.suggestionCard {
+    font-size: 1.1rem;
+}
+
+.todayRow {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.todayBox {
+    background: rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .mainContentParentDiv {
+        flex-direction: column;
+    }
+
+    .leftDiv, .rightDiv {
+        width: 100%;
+    }
+
+    .metricsRow {
+        flex-wrap: wrap;
+    }
+}
