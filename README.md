@@ -29,11 +29,7 @@ A responsive **Live Weather Forecast Web Application** that shows real-time weat
 
 - **Version Control**:  
   - Git & GitHub
-
-
-## 📸 Screenshots
-
-C:\Users\UPPUNUTHALA SWATHI\OneDrive\Pictures\Screenshots\Screenshot 2025-12-26 155933.png" 
+ 
 
 
 ## ⚙️ How to Run the Project Locally
