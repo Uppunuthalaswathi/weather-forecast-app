@@ -30,11 +30,10 @@ A responsive **Live Weather Forecast Web Application** that shows real-time weat
 - **Version Control**:  
   - Git & GitHub
 
----
 
 ## 📸 Screenshots
 
-<img width="1917" height="1118" alt="image" src="C:\Users\UPPUNUTHALA SWATHI\OneDrive\Pictures\Screenshots\Screenshot 2025-12-26 155933.png" />
+C:\Users\UPPUNUTHALA SWATHI\OneDrive\Pictures\Screenshots\Screenshot 2025-12-26 155933.png" 
 
 
 ## ⚙️ How to Run the Project Locally
@@ -42,8 +41,10 @@ A responsive **Live Weather Forecast Web Application** that shows real-time weat
 1. **Clone the repository**
    ```bash
    git clone https://github.com/Uppunuthalaswathi/weather-forecast-app.git
+   
 **2.Navigate to the project folder**
-    cd weather-forecast-app
+     cd weather-forecast-app
+    
 **3.Open index.html**
     Double-click index.html
     OR
